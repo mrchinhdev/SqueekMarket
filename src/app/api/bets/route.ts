@@ -1,25 +1,10 @@
 import { NextResponse } from 'next/server';
-import { paths, readJson, writeJson } from '@/lib/storage';
-
-type Bet = {
-  id: string;
-  marketId: string;
-  address: string;
-  side: 'yes' | 'no';
-  amount: number;
-  currency: 'point';
-  timestamp: string;
-  resolved?: boolean;
-  payout?: number;
-};
+import { getBets, insertBet, updateMarket, getMarkets, Bet } from '@/lib/db';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const address = searchParams.get('address');
-  const bets = readJson<Bet[]>(paths.BETS_FILE, []);
-  if (address) {
-    return NextResponse.json(bets.filter(b => b.address.toLowerCase() === address.toLowerCase()));
-  }
+  const bets = await getBets(address || undefined);
   return NextResponse.json(bets);
 }
 
@@ -31,16 +16,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const bets = readJson<Bet[]>(paths.BETS_FILE, []);
   const addr = address.toLowerCase();
-
-  // Check if user already bet on this market
-  const alreadyBet = bets.some(b => b.marketId === marketId && b.address === addr);
-  if (alreadyBet) {
+  const existing = await getBets(addr);
+  if (existing.some(b => b.marketId === marketId)) {
     return NextResponse.json({ error: 'You already placed a bet on this market' }, { status: 400 });
   }
 
-  // Use one bet slot
+  // Use one bet slot via points API
   const pointsRes = await fetch(new URL('/api/points', req.url).origin + '/api/points', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   const bet: Bet = {
-    id: 'b' + Date.now(),
+    id: 'b' + Date.now() + Math.random().toString(36).slice(2, 6),
     marketId,
     address: addr,
     side,
@@ -60,15 +42,17 @@ export async function POST(req: Request) {
     currency: 'point',
     timestamp: new Date().toISOString(),
   };
-  bets.push(bet);
-  writeJson(paths.BETS_FILE, bets);
 
-  // Update market volume
-  const markets = readJson<any[]>(paths.MARKETS_FILE, []);
+  const ok = await insertBet(bet);
+  if (!ok) {
+    return NextResponse.json({ error: 'Failed to save bet' }, { status: 500 });
+  }
+
+  // Increment market volume
+  const markets = await getMarkets();
   const market = markets.find(m => m.id === marketId);
   if (market) {
-    market.volume += 1;
-    writeJson(paths.MARKETS_FILE, markets);
+    await updateMarket(marketId, { volume: (market.volume || 0) + 1 });
   }
 
   return NextResponse.json(bet);

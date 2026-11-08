@@ -10,7 +10,7 @@ const config = createConfig({
   chains: [sepolia],
   connectors: [injected()],
   transports: {
-    [sepolia.id]: http('https://ethereum-sepolia.publicnode.com'),
+    [sepolia.id]: http('https://ethereum-sepolia-rpc.publicnode.com'),
   },
 });
 

@@ -327,7 +327,7 @@ export default function Home() {
                 onClick={() => connect({ connector: connectors.find(c => c.id === 'injected') || injected() })}
                 className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-black rounded-xl font-semibold hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/20"
               >
-                <Wallet size={18} /> Connect Wallet
+                <Wallet size={18} /> Connect MetaMask / OKX
               </button>
             )}
           </div>

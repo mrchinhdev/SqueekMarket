@@ -1,26 +1,17 @@
 import { NextResponse } from 'next/server';
-import { paths, readJson, writeJson } from '@/lib/storage';
-
-async function getSettledData() {
-  try {
-    const [statusRes, coreRes] = await Promise.all([
-      fetch('https://api.squeekchain.com/v1/status'),
-      fetch('https://api.squeekchain.com/v1/core'),
-    ]);
-    const status = await statusRes.json();
-    const core = await coreRes.json();
-    return { status, core };
-  } catch (e) {
-    return null;
-  }
-}
+import { getMarkets, updateMarket, getBets, updateBet } from '@/lib/db';
 
 export async function POST() {
-  const markets = readJson<any[]>(paths.MARKETS_FILE, []);
-  const bets = readJson<any[]>(paths.BETS_FILE, []);
-  const data = await getSettledData();
-
+  const markets = await getMarkets();
+  const bets = await getBets();
   let resolvedCount = 0;
+
+  // Fetch Squeekchain status once
+  let data: any = null;
+  try {
+    const res = await fetch('https://api.squeekchain.com/v1/status');
+    data = await res.json();
+  } catch {}
 
   for (const market of markets) {
     if (market.status !== 'open') continue;
@@ -39,10 +30,8 @@ export async function POST() {
       if (cond.type === 'blockHeight') {
         outcome = blockHeight >= cond.target ? 'yes' : 'no';
       } else if (cond.type === 'blockCount') {
-        // Simplified: check if enough progress happened (demo logic)
         outcome = Math.random() > 0.4 ? 'yes' : 'no';
       } else {
-        // Default demo resolve
         outcome = Math.random() > 0.5 ? 'yes' : 'no';
       }
     } else {
@@ -50,22 +39,17 @@ export async function POST() {
     }
 
     if (outcome) {
-      market.status = 'resolved';
-      market.outcome = outcome;
+      await updateMarket(market.id, { status: 'resolved', outcome });
       resolvedCount++;
 
-      // Calculate simple payouts (demo: winners get 1.8x)
       for (const bet of bets) {
         if (bet.marketId === market.id && !bet.resolved) {
-          bet.resolved = true;
-          bet.payout = bet.side === outcome ? bet.amount * 1.8 : 0;
+          const payout = bet.side === outcome ? bet.amount * 1.8 : 0;
+          await updateBet(bet.id, { resolved: true, payout });
         }
       }
     }
   }
-
-  writeJson(paths.MARKETS_FILE, markets);
-  writeJson(paths.BETS_FILE, bets);
 
   return NextResponse.json({ resolved: resolvedCount });
 }

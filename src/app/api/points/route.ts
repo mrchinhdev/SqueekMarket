@@ -1,26 +1,24 @@
 import { NextResponse } from 'next/server';
-import { paths, readJson, writeJson } from '@/lib/storage';
-
-type UserData = {
-  date: string;
-  freeUsed: number;
-  purchased: number;
-  totalPoints: number;
-  badges: string[];
-};
+import { getUser, upsertUser, UserData } from '@/lib/db';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const address = searchParams.get('address');
   if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 });
 
-  const data = readJson<Record<string, UserData>>(paths.POINTS_FILE, {});
   const today = new Date().toISOString().slice(0, 10);
-  const user = data[address.toLowerCase()] || { date: today, freeUsed: 0, purchased: 0, totalPoints: 0, badges: [] };
+  let user = await getUser(address);
 
-  if (user.date !== today) {
-    user.date = today;
-    user.freeUsed = 0;
+  if (!user || user.date !== today) {
+    user = {
+      address: address.toLowerCase(),
+      date: today,
+      freeUsed: 0,
+      purchased: user?.purchased || 0,
+      totalPoints: user?.totalPoints || 0,
+      badges: user?.badges || [],
+    };
+    await upsertUser(user);
   }
 
   const remainingFree = Math.max(0, 12 - user.freeUsed);
@@ -41,21 +39,24 @@ export async function POST(req: Request) {
   const { address, action, amount } = body;
   if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 });
 
-  const data = readJson<Record<string, UserData>>(paths.POINTS_FILE, {});
-  const key = address.toLowerCase();
   const today = new Date().toISOString().slice(0, 10);
-  const user = data[key] || { date: today, freeUsed: 0, purchased: 0, totalPoints: 0, badges: [] };
+  let user = await getUser(address);
 
-  if (user.date !== today) {
-    user.date = today;
-    user.freeUsed = 0;
+  if (!user || user.date !== today) {
+    user = {
+      address: address.toLowerCase(),
+      date: today,
+      freeUsed: 0,
+      purchased: user?.purchased || 0,
+      totalPoints: user?.totalPoints || 0,
+      badges: user?.badges || [],
+    };
   }
 
   if (action === 'buy') {
     const count = Number(amount) || 1;
     user.purchased += count;
-    data[key] = user;
-    writeJson(paths.POINTS_FILE, data);
+    await upsertUser(user);
     return NextResponse.json({ success: true, purchased: user.purchased });
   }
 
@@ -67,29 +68,26 @@ export async function POST(req: Request) {
     } else {
       return NextResponse.json({ error: 'No bets remaining' }, { status: 400 });
     }
-    data[key] = user;
-    writeJson(paths.POINTS_FILE, data);
+    await upsertUser(user);
     return NextResponse.json({ success: true });
   }
 
   if (action === 'addPoints') {
     user.totalPoints += Number(amount) || 0;
-    // Check badges
     const milestones = [
-      { id: 'newbie', threshold: 100, name: 'Newbie' },
-      { id: 'apprentice', threshold: 300, name: 'Apprentice' },
-      { id: 'veteran', threshold: 500, name: 'Veteran' },
-      { id: 'legendary', threshold: 1000, name: 'Legendary' },
+      { id: 'newbie', threshold: 100 },
+      { id: 'apprentice', threshold: 300 },
+      { id: 'veteran', threshold: 500 },
+      { id: 'legendary', threshold: 1000 },
     ];
     for (const m of milestones) {
       if (user.totalPoints >= m.threshold && !user.badges.includes(m.id)) {
         user.badges.push(m.id);
       }
     }
-    data[key] = user;
-    writeJson(paths.POINTS_FILE, data);
+    await upsertUser(user);
     return NextResponse.json({ success: true, totalPoints: user.totalPoints, badges: user.badges });
   }
 
-  return NextResponse.json({ error: 'invalid action' }, { status: 400 });
+  return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 }

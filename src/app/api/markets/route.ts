@@ -1,20 +1,5 @@
 import { NextResponse } from 'next/server';
-import { paths, readJson, writeJson } from '@/lib/storage';
-
-type Market = {
-  id: string;
-  question: string;
-  type: string;
-  status: 'open' | 'resolved';
-  resolveAt: string;
-  outcome?: 'yes' | 'no';
-  yesPrice: number;
-  volume: number;
-  createdAt: string;
-  day: string;
-  hour: number;
-  resolveCondition: any;
-};
+import { getMarkets, upsertMarkets, Market } from '@/lib/db';
 
 const TEMPLATES = [
   { q: 'Will Squeektoshi complete more than 8 blocks in the next 3 hours?', type: 'count', cond: { type: 'blockCount', over: 8 }, price: 0.58 },
@@ -38,7 +23,7 @@ function generateMarket(day: string, index: number, hour: number): Market {
   endOfDay.setUTCHours(23, 59, 59, 999);
 
   return {
-    id: `${day}-${index}-${Date.now() % 10000}`,
+    id: `${day}-${index}`,
     question: t.q,
     type: t.type,
     status: 'open',
@@ -57,11 +42,8 @@ export async function GET() {
   const today = now.toISOString().slice(0, 10);
   const currentHour = now.getUTCHours();
 
-  let markets = readJson<Market[]>(paths.MARKETS_FILE, []);
+  let markets = await getMarkets();
   const todayMarkets = markets.filter(m => m.day === today);
-
-  // At 00:00 UTC: ensure 12 markets exist
-  // Every hour after: add 1 more if not present
   const expectedCount = 12 + currentHour;
 
   if (todayMarkets.length < expectedCount) {
@@ -75,14 +57,15 @@ export async function GET() {
     }
 
     if (newMarkets.length > 0) {
-      markets = [...markets.filter(m => m.day !== today), ...todayMarkets, ...newMarkets];
-      writeJson(paths.MARKETS_FILE, markets);
+      await upsertMarkets(newMarkets);
+      markets = await getMarkets();
     }
   }
 
   const result = markets
     .filter(m => m.day === today)
-    .filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i) // dedupe
+    .filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i)
     .sort((a, b) => a.id.localeCompare(b.id));
+
   return NextResponse.json(result);
 }
