@@ -298,13 +298,13 @@ export default function Home() {
               <h3 className="font-semibold">Buy Bet Slots</h3>
               <button onClick={() => setBuyModal(false)}><X size={20} /></button>
             </div>
-            <p className="text-sm text-zinc-400 mb-4">10 SQK = 1 bet slot</p>
+            <p className="text-sm text-zinc-400 mb-4">10 $SQK = 1 bet slot</p>
             <div className="flex items-center gap-3 mb-4">
               <button onClick={() => setBuyCount(Math.max(1, buyCount - 1))} className="w-10 h-10 bg-zinc-800 rounded-lg">-</button>
               <span className="text-2xl font-bold w-12 text-center">{buyCount}</span>
               <button onClick={() => setBuyCount(buyCount + 1)} className="w-10 h-10 bg-zinc-800 rounded-lg">+</button>
             </div>
-            <p className="text-center text-amber-400 font-medium mb-6">Cost: {buyCount * 10} SQK</p>
+            <p className="text-center text-amber-400 font-medium mb-6">Cost: {buyCount * 10} $SQK</p>
             <div className="flex gap-3">
               <button onClick={() => setBuyModal(false)} className="flex-1 py-2.5 bg-zinc-800 rounded-xl">Cancel</button>
               <button onClick={buyBets} disabled={loading} className="flex-1 py-2.5 bg-amber-500 text-black font-semibold rounded-xl">
@@ -400,12 +400,12 @@ export default function Home() {
                 <div className="text-xs text-amber-200/50 uppercase tracking-wider">Balance & Bets</div>
                 <div className="text-lg font-semibold text-amber-400">
                   {sqkBalance && sqkBalance.value !== undefined
-                    ? `${Number(formatUnits(sqkBalance.value, sqkBalance.decimals || 18)).toFixed(2)} SQK`
+                    ? `${Number(formatUnits(sqkBalance.value, sqkBalance.decimals || 18)).toFixed(2)} $SQK`
                     : balanceLoading
                       ? 'Loading...'
                       : balanceError
                         ? 'Failed to load'
-                        : '0.00 SQK'}
+                        : '0.00 $SQK'}
                 </div>
                 <div className="text-sm text-amber-200/70">
                   Bets remaining: <span className="font-medium text-amber-300">{stats.totalRemaining}</span>
