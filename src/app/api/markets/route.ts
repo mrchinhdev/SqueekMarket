@@ -43,14 +43,10 @@ export async function GET() {
   const today = now.toISOString().slice(0, 10);
   const currentHour = now.getUTCHours();
 
-  // Debug: test supabase connection
-  const { data: testData, error: testError } = await supabase.from('markets').select('id').limit(1);
-
   let markets = await getMarkets();
   const todayMarkets = markets.filter(m => m.day === today);
-  const expectedCount = Math.min(12 + currentHour, 20); // cap for safety
+  const expectedCount = Math.min(12 + currentHour, 20);
 
-  let upsertError = null;
   if (todayMarkets.length < expectedCount) {
     const existingIndexes = new Set(todayMarkets.map(m => parseInt(m.id.split('-')[1] || '0')));
     const newMarkets: Market[] = [];
@@ -62,11 +58,8 @@ export async function GET() {
     }
 
     if (newMarkets.length > 0) {
-      const { error } = await supabase.from('markets').upsert(newMarkets, { onConflict: 'id' });
-      upsertError = error;
-      if (!error) {
-        markets = await getMarkets();
-      }
+      await upsertMarkets(newMarkets);
+      markets = await getMarkets();
     }
   }
 
@@ -85,23 +78,6 @@ export async function GET() {
       volume: m.volume,
       createdAt: m.created_at,
     }));
-
-  // Include debug info if empty
-  if (result.length === 0) {
-    return NextResponse.json({
-      markets: result,
-      debug: {
-        today,
-        marketsCount: markets.length,
-        todayCount: todayMarkets.length,
-        expectedCount,
-        testError: testError ? testError.message : null,
-        upsertError: upsertError ? upsertError.message : null,
-        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      }
-    });
-  }
 
   return NextResponse.json(result);
 }
