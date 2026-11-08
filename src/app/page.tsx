@@ -61,10 +61,10 @@ type UserStats = {
 };
 
 const BADGES = [
-  { id: 'newbie', name: 'Newbie', threshold: 100, color: 'bg-zinc-600', img: '/hamsters/newbie.svg' },
-  { id: 'apprentice', name: 'Apprentice', threshold: 300, color: 'bg-blue-600', img: '/hamsters/apprentice.svg' },
-  { id: 'veteran', name: 'Veteran', threshold: 500, color: 'bg-purple-600', img: '/hamsters/veteran.svg' },
-  { id: 'legendary', name: 'Legendary', threshold: 1000, color: 'bg-amber-500', img: '/hamsters/legendary.svg' },
+  { id: 'newbie', name: 'Newbie', threshold: 100, color: 'bg-zinc-600', img: '/hamsters/newbie.png' },
+  { id: 'apprentice', name: 'Apprentice', threshold: 300, color: 'bg-blue-600', img: '/hamsters/apprentice.png' },
+  { id: 'veteran', name: 'Veteran', threshold: 500, color: 'bg-purple-600', img: '/hamsters/veteran.png' },
+  { id: 'legendary', name: 'Legendary', threshold: 1000, color: 'bg-amber-500', img: '/hamsters/legendary.png' },
 ];
 
 export default function Home() {
@@ -320,7 +320,7 @@ export default function Home() {
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden">
-              <img src="/hamsters/logo.svg" alt="Squeek" className="w-10 h-10" style={{ imageRendering: 'pixelated' }} />
+              <img src="/hamsters/logo.png" alt="Squeek" className="w-10 h-10" style={{ imageRendering: 'pixelated' }} />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Squeek Market</h1>
