@@ -1,9 +1,23 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useBalance, useWriteContract } from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { formatUnits } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 import { SQK_ADDRESS } from '@/lib/constants';
+
+const RECEIVER_ADDRESS = '0xA91D3e7050e818941c12a2772A733C8EcDE71a46' as const;
+const ERC20_TRANSFER_ABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+] as const;
 import { useEffect, useState } from 'react';
 import { Wallet, RefreshCw, Trophy, ChevronLeft, ChevronRight, X, Clock } from 'lucide-react';
 
@@ -57,6 +71,7 @@ export default function Home() {
   const { address, isConnected, chain } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
+  const { writeContractAsync } = useWriteContract();
 
   const { data: sqkBalance, isLoading: balanceLoading, error: balanceError, isSuccess: balanceSuccess } = useBalance({
     address,
@@ -187,18 +202,35 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    // In real app, user would sign a transfer. Here we just record the purchase.
-    const res = await fetch('/api/points', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, action: 'buy', amount: buyCount }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (data.success) {
-      showMessage(`Bought ${buyCount} bet(s) for ${cost} SQK!`);
-      setBuyModal(false);
-      loadData();
+    try {
+      // Transfer SQK to receiver
+      const amount = parseUnits(cost.toString(), sqkBalance?.decimals || 18);
+      await writeContractAsync({
+        address: SQK_ADDRESS,
+        abi: ERC20_TRANSFER_ABI,
+        functionName: 'transfer',
+        args: [RECEIVER_ADDRESS, amount],
+        chainId: 11155111,
+      });
+
+      // Record the purchase after successful transfer
+      const res = await fetch('/api/points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, action: 'buy', amount: buyCount }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showMessage(`Bought ${buyCount} bet(s) for ${cost} SQK!`);
+        setBuyModal(false);
+        loadData();
+      } else {
+        showMessage(data.error || 'Failed to record purchase', 'error');
+      }
+    } catch (err: any) {
+      showMessage(err?.shortMessage || err?.message || 'Transfer failed', 'error');
+    } finally {
+      setLoading(false);
     }
   }
 
