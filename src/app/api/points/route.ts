@@ -13,22 +13,22 @@ export async function GET(req: Request) {
     user = {
       address: address.toLowerCase(),
       date: today,
-      freeUsed: 0,
+      free_used: 0,
       purchased: user?.purchased || 0,
-      totalPoints: user?.totalPoints || 0,
+      total_points: user?.total_points || 0,
       badges: user?.badges || [],
     };
     await upsertUser(user);
   }
 
-  const remainingFree = Math.max(0, 12 - user.freeUsed);
+  const remainingFree = Math.max(0, 12 - user.free_used);
   const totalRemaining = remainingFree + user.purchased;
 
   return NextResponse.json({
     remainingFree,
     purchased: user.purchased,
     totalRemaining,
-    totalPoints: user.totalPoints,
+    totalPoints: user.total_points,
     badges: user.badges,
     date: today,
   });
@@ -46,9 +46,9 @@ export async function POST(req: Request) {
     user = {
       address: address.toLowerCase(),
       date: today,
-      freeUsed: 0,
+      free_used: 0,
       purchased: user?.purchased || 0,
-      totalPoints: user?.totalPoints || 0,
+      total_points: user?.total_points || 0,
       badges: user?.badges || [],
     };
   }
@@ -61,8 +61,8 @@ export async function POST(req: Request) {
   }
 
   if (action === 'use') {
-    if (user.freeUsed < 12) {
-      user.freeUsed += 1;
+    if (user.free_used < 12) {
+      user.free_used += 1;
     } else if (user.purchased > 0) {
       user.purchased -= 1;
     } else {
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
   }
 
   if (action === 'addPoints') {
-    user.totalPoints += Number(amount) || 0;
+    user.total_points += Number(amount) || 0;
     const milestones = [
       { id: 'newbie', threshold: 100 },
       { id: 'apprentice', threshold: 300 },
@@ -81,12 +81,12 @@ export async function POST(req: Request) {
       { id: 'legendary', threshold: 1000 },
     ];
     for (const m of milestones) {
-      if (user.totalPoints >= m.threshold && !user.badges.includes(m.id)) {
+      if (user.total_points >= m.threshold && !user.badges.includes(m.id)) {
         user.badges.push(m.id);
       }
     }
     await upsertUser(user);
-    return NextResponse.json({ success: true, totalPoints: user.totalPoints, badges: user.badges });
+    return NextResponse.json({ success: true, totalPoints: user.total_points, badges: user.badges });
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });

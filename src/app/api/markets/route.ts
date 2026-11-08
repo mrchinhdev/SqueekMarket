@@ -27,13 +27,13 @@ function generateMarket(day: string, index: number, hour: number): Market {
     question: t.q,
     type: t.type,
     status: 'open',
-    resolveAt: endOfDay.toISOString(),
-    yesPrice: t.price,
+    resolve_at: endOfDay.toISOString(),
+    yes_price: t.price,
     volume: 0,
-    createdAt: now.toISOString(),
+    created_at: now.toISOString(),
     day,
     hour,
-    resolveCondition: t.cond,
+    resolve_condition: t.cond,
   };
 }
 
@@ -65,7 +65,18 @@ export async function GET() {
   const result = markets
     .filter(m => m.day === today)
     .filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i)
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map(m => ({
+      id: m.id,
+      question: m.question,
+      type: m.type,
+      status: m.status,
+      resolveAt: m.resolve_at,
+      outcome: m.outcome,
+      yesPrice: m.yes_price,
+      volume: m.volume,
+      createdAt: m.created_at,
+    }));
 
   return NextResponse.json(result);
 }

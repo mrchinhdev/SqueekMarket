@@ -6,7 +6,6 @@ export async function POST() {
   const bets = await getBets();
   let resolvedCount = 0;
 
-  // Fetch Squeekchain status once
   let data: any = null;
   try {
     const res = await fetch('https://api.squeekchain.com/v1/status');
@@ -15,15 +14,15 @@ export async function POST() {
 
   for (const market of markets) {
     if (market.status !== 'open') continue;
-    if (new Date(market.resolveAt) > new Date()) continue;
+    if (new Date(market.resolve_at) > new Date()) continue;
 
     let outcome: 'yes' | 'no' | null = null;
-    const cond = market.resolveCondition || {};
+    const cond = market.resolve_condition || {};
 
-    if (data?.core?.status === 'available' || data?.status) {
+    if (data) {
       const blockHeight = Number(
-        data.core?.core?.blockHeight ||
-        data.status?.builder?.anchor?.blockHeight ||
+        data.builder?.anchor?.blockHeight ||
+        data.builder?.projected?.blockHeight ||
         0
       );
 
@@ -43,7 +42,7 @@ export async function POST() {
       resolvedCount++;
 
       for (const bet of bets) {
-        if (bet.marketId === market.id && !bet.resolved) {
+        if (bet.market_id === market.id && !bet.resolved) {
           const payout = bet.side === outcome ? bet.amount * 1.8 : 0;
           await updateBet(bet.id, { resolved: true, payout });
         }

@@ -5,19 +5,19 @@ export type Market = {
   question: string;
   type: string;
   status: 'open' | 'resolved';
-  resolveAt: string;
+  resolve_at: string;
   outcome?: 'yes' | 'no' | null;
-  yesPrice: number;
+  yes_price: number;
   volume: number;
-  createdAt: string;
+  created_at: string;
   day: string;
   hour: number;
-  resolveCondition: any;
+  resolve_condition: any;
 };
 
 export type Bet = {
   id: string;
-  marketId: string;
+  market_id: string;
   address: string;
   side: 'yes' | 'no';
   amount: number;
@@ -30,15 +30,14 @@ export type Bet = {
 export type UserData = {
   address: string;
   date: string;
-  freeUsed: number;
+  free_used: number;
   purchased: number;
-  totalPoints: number;
+  total_points: number;
   badges: string[];
 };
 
-// Markets
 export async function getMarkets(): Promise<Market[]> {
-  const { data, error } = await supabase.from('markets').select('*').order('createdAt', { ascending: false });
+  const { data, error } = await supabase.from('markets').select('*').order('created_at', { ascending: false });
   if (error) {
     console.error('getMarkets', error);
     return [];
@@ -57,7 +56,6 @@ export async function updateMarket(id: string, updates: Partial<Market>) {
   if (error) console.error('updateMarket', error);
 }
 
-// Bets
 export async function getBets(address?: string): Promise<Bet[]> {
   let q = supabase.from('bets').select('*').order('timestamp', { ascending: false });
   if (address) q = q.eq('address', address.toLowerCase());
@@ -80,7 +78,6 @@ export async function updateBet(id: string, updates: Partial<Bet>) {
   if (error) console.error('updateBet', error);
 }
 
-// Points / Users
 export async function getUser(address: string): Promise<UserData | null> {
   const { data, error } = await supabase.from('users').select('*').eq('address', address.toLowerCase()).single();
   if (error && error.code !== 'PGRST116') console.error('getUser', error);
