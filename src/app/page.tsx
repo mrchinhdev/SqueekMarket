@@ -61,10 +61,10 @@ type UserStats = {
 };
 
 const BADGES = [
-  { id: 'newbie', name: 'Newbie', threshold: 100, color: 'bg-zinc-600', emoji: '🐣' },
-  { id: 'apprentice', name: 'Apprentice', threshold: 300, color: 'bg-blue-600', emoji: '🐹' },
-  { id: 'veteran', name: 'Veteran', threshold: 500, color: 'bg-purple-600', emoji: '⚡' },
-  { id: 'legendary', name: 'Legendary', threshold: 1000, color: 'bg-amber-500', emoji: '👑' },
+  { id: 'newbie', name: 'Newbie', threshold: 100, color: 'bg-zinc-600', img: '/hamsters/newbie.svg' },
+  { id: 'apprentice', name: 'Apprentice', threshold: 300, color: 'bg-blue-600', img: '/hamsters/apprentice.svg' },
+  { id: 'veteran', name: 'Veteran', threshold: 500, color: 'bg-purple-600', img: '/hamsters/veteran.svg' },
+  { id: 'legendary', name: 'Legendary', threshold: 1000, color: 'bg-amber-500', img: '/hamsters/legendary.svg' },
 ];
 
 export default function Home() {
@@ -319,8 +319,8 @@ export default function Home() {
         {/* Header */}
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-amber-500/20">
-              🐹
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden">
+              <img src="/hamsters/logo.svg" alt="Squeek" className="w-10 h-10" style={{ imageRendering: 'pixelated' }} />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Squeek Market</h1>
@@ -642,7 +642,7 @@ export default function Home() {
                     }`}
                     style={{ imageRendering: 'pixelated' }}
                   >
-                    <div className="text-5xl mb-3">{b.emoji}</div>
+                    <img src={b.img} alt={b.name} className="w-12 h-12 mx-auto mb-3" style={{ imageRendering: 'pixelated' }} />
                     <div className="font-bold text-sm uppercase tracking-wide">{b.name}</div>
                     <div className="text-xs mt-1 opacity-80">{b.threshold} pts</div>
                     {unlocked && (
