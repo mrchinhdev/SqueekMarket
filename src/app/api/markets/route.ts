@@ -45,7 +45,7 @@ export async function GET() {
 
   let markets = await getMarkets();
   const todayMarkets = markets.filter(m => m.day === today);
-  const expectedCount = Math.min(12 + currentHour, 20);
+  const expectedCount = 12 + currentHour; // 12 base + 1 per UTC hour
 
   if (todayMarkets.length < expectedCount) {
     const existingIndexes = new Set(todayMarkets.map(m => parseInt(m.id.split('-')[1] || '0')));
