@@ -4,7 +4,7 @@ squeekchain-project: aca0f333-6bbf-406f-86df-1eb2f21ea5a2
 
 ### Bet on Squeektoshi · Hamster-Powered Predictions
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Website-blue?style=for-the-badge)](https://squeek-market-gold.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Website-blue?style=for-the-badge)](https://www.squeekmarket.xyz/)
 [![Built with Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![Network](https://img.shields.io/badge/Network-Ethereum%20Sepolia-purple?style=for-the-badge)](https://sepolia.etherscan.io/)
 
@@ -14,7 +14,7 @@ It brings prediction markets to life through a simple and interactive experience
 
 Powered by Squeekchain's on-chain activity, Squeek Market combines blockchain technology, gamification, and community participation into one fun experience.
 
-🌐 **Live Website:** https://squeek-market-gold.vercel.app/
+🌐 **Live Website:** https://www.squeekmarket.xyz/
 
 ---
 
@@ -88,58 +88,6 @@ Squeek Market uses a Next.js application with API routes handling market and bet
 
 ---
 
-## 🚀 Getting Started
-
-Follow these steps to run Squeek Market locally.
-
-### Prerequisites
-
-- Node.js 18+
-- npm
-- An Ethereum-compatible wallet
-- Sepolia testnet access
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/mrchinhdev/SqueekMarket.git
-```
-
-2. Navigate to the project directory:
-
-```bash
-cd SqueekMarket
-```
-
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Start the development server:
-
-```bash
-npm run dev
-```
-
-5. Open your browser and visit:
-
-```text
-http://localhost:3000
-```
-
-### Build for Production
-
-```bash
-npm run build
-npm run start
-```
-
----
-
 ## 🌐 Network & Ecosystem
 
 Squeek Market is designed for the **Squeekchain ecosystem**, using Ethereum Sepolia for its testnet wallet interactions.
@@ -163,7 +111,7 @@ Squeek Market explores how prediction games, on-chain activity, and gamified exp
 
 ## 🔗 Links
 
-- **Website:** https://squeek-market-gold.vercel.app/
+- **Website:** https://www.squeekmarket.xyz/
 - **GitHub:** https://github.com/mrchinhdev/SqueekMarket
 - **Squeekchain API:** https://api.squeekchain.com
 
