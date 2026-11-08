@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getMarkets, upsertMarkets, Market } from '@/lib/db';
+import { getMarkets, upsertMarkets, getBetCounts, Market } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
 
 const TEMPLATES = [
@@ -63,6 +63,7 @@ export async function GET() {
     }
   }
 
+  const betCounts = await getBetCounts();
   const result = markets
     .filter(m => m.day === today)
     .filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i)
@@ -75,7 +76,7 @@ export async function GET() {
       resolveAt: m.resolve_at,
       outcome: m.outcome,
       yesPrice: m.yes_price,
-      volume: m.volume,
+      volume: betCounts[m.id] || 0,
       createdAt: m.created_at,
     }));
 

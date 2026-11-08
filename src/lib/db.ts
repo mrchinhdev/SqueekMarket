@@ -88,3 +88,14 @@ export async function upsertUser(user: UserData) {
   const { error } = await supabase.from('users').upsert({ ...user, address: user.address.toLowerCase() }, { onConflict: 'address' });
   if (error) console.error('upsertUser', error);
 }
+
+export async function getBetCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from('bets').select('market_id');
+  if (error || !data) return {};
+  const counts: Record<string, number> = {};
+  for (const row of data) {
+    const id = row.market_id;
+    counts[id] = (counts[id] || 0) + 1;
+  }
+  return counts;
+}
