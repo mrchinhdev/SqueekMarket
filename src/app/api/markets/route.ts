@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getMarkets, upsertMarkets, Market } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 const TEMPLATES = [
   { q: 'Will Squeektoshi complete more than 8 blocks in the next 3 hours?', type: 'count', cond: { type: 'blockCount', over: 8 }, price: 0.58 },
@@ -42,10 +43,14 @@ export async function GET() {
   const today = now.toISOString().slice(0, 10);
   const currentHour = now.getUTCHours();
 
+  // Debug: test supabase connection
+  const { data: testData, error: testError } = await supabase.from('markets').select('id').limit(1);
+
   let markets = await getMarkets();
   const todayMarkets = markets.filter(m => m.day === today);
-  const expectedCount = 12 + currentHour;
+  const expectedCount = Math.min(12 + currentHour, 20); // cap for safety
 
+  let upsertError = null;
   if (todayMarkets.length < expectedCount) {
     const existingIndexes = new Set(todayMarkets.map(m => parseInt(m.id.split('-')[1] || '0')));
     const newMarkets: Market[] = [];
@@ -57,8 +62,11 @@ export async function GET() {
     }
 
     if (newMarkets.length > 0) {
-      await upsertMarkets(newMarkets);
-      markets = await getMarkets();
+      const { error } = await supabase.from('markets').upsert(newMarkets, { onConflict: 'id' });
+      upsertError = error;
+      if (!error) {
+        markets = await getMarkets();
+      }
     }
   }
 
@@ -77,6 +85,23 @@ export async function GET() {
       volume: m.volume,
       createdAt: m.created_at,
     }));
+
+  // Include debug info if empty
+  if (result.length === 0) {
+    return NextResponse.json({
+      markets: result,
+      debug: {
+        today,
+        marketsCount: markets.length,
+        todayCount: todayMarkets.length,
+        expectedCount,
+        testError: testError ? testError.message : null,
+        upsertError: upsertError ? upsertError.message : null,
+        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }
+    });
+  }
 
   return NextResponse.json(result);
 }
