@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dot-color: rgba(255, 255, 255, 0.2);
+  --bg: #09090b;
+  --text: #fafafa;
+  --card: #1c1c1f;
+  --card-border: #2e2e32;
+}
+
+[data-theme="light"] {
+  --dot-color: rgba(0, 0, 0, 0.16);
+  --bg: #f5f5f5;
+  --text: #18181b;
+  --card: #ffffff;
+  --card-border: #e4e4e7;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+}
+
+/* Static dots on the page background */
+.dot-background {
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--dot-color) 0.75px, transparent 0.75px);
+  background-size: 54px 54px;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Solid cards - not transparent */
+.card-solid {
+  background-color: var(--card);
+  border: 1px solid var(--card-border);
+}
