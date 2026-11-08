@@ -571,9 +571,11 @@ export default function Home() {
         {/* My Bets */}
         {tab === 'bets' && (
           <div>
-            <div className="mb-4 flex items-center justify-between text-sm text-amber-200/70">
-              <div>
-                Total bets placed: <span className="font-semibold text-amber-300">{myBets.length}</span>
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm text-amber-200/70">
+              <div className="flex flex-wrap items-center gap-3">
+                <span>Total: <span className="font-semibold text-amber-300">{myBets.length}</span></span>
+                <span className="text-emerald-400">Correct: <span className="font-semibold">{myBets.filter(b => b.resolved && b.payout && b.payout > 0).length}</span></span>
+                <span className="text-rose-400">Wrong: <span className="font-semibold">{myBets.filter(b => b.resolved && (!b.payout || b.payout === 0)).length}</span></span>
               </div>
               {myBets.length > BETS_PER_PAGE && (
                 <div className="flex items-center gap-2">
@@ -654,6 +656,9 @@ export default function Home() {
             </div>
             <p className="text-center text-xs text-zinc-500 mt-6">
               Earn points by winning bets. Badges unlock automatically at 100 / 300 / 500 / 1000 points.
+            </p>
+            <p className="text-center text-xs text-amber-200/60 mt-2">
+              Points are updated every 24 hours at 00:00 UTC.
             </p>
           </div>
         )}
