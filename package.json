@@ -15,9 +15,6 @@
     "viem": "^2.0.0",
     "@tanstack/react-query": "^5.0.0",
     "lucide-react": "^0.460.0",
-    "@x402/evm": "^0.1.0",
-    "@x402/core": "^0.1.0",
-    "@x402/svm": "^0.1.0",
     "@supabase/supabase-js": "^2.45.0"
   },
   "devDependencies": {
